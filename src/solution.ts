@@ -1,8 +1,12 @@
-import { readFileSync, promises as fsPromises } from 'fs';
-import { Number } from 'mongoose';
-//import { join } from 'path';
+// import { readFileSync } from 'fs';
+import * as dotenv from 'dotenv';
+dotenv.config();
+const env=process.env;
+const stockFilePath:string=env.STOCK_FILE_PATH ||'data/stock2.json';
+const transactionsFilePath:string=env.TRANSACTIONS_FILE_PATH ||'data/transactions2.json';
 
-// ✅ read file SYNCHRONOUSLY
+dotenv.config();
+import {getData,isSkuExist} from './helpers/helper';
 interface IStock{
   sku:string,
   stock:number
@@ -13,45 +17,31 @@ interface ITransactions{
   qty:number
 }
 
-function getData(filename: string) {
-//   const result = readFileSync(join(__dirname, filename), 'utf-8');
-  const result = readFileSync(filename, 'utf-8');
 
-  // console.log(result); // 👉️ "hello world hello world ..."
-
-  return result;
-}
-function getStockBySku(sku:string):Promise<{sku:string,qty:number}>{
-  const stockData=getData('../data/stock.json');
+export  function getStockBySku(sku:string):Promise<{sku:string,qty:number}>{
+  // const stockData=getData('data/stock.json');
+  const stockData=getData(stockFilePath);
   const stock:IStock[]=JSON.parse(stockData);
-  const transitionData=getData('../data/transactions.json')
+  // const transitionData=getData('data/transactions.json')
+  const transitionData=getData(transactionsFilePath)
   const transactions:ITransactions[]=JSON.parse(transitionData);
    if(!isSkuExist(sku,stock) && !isSkuExist(sku,transactions)){
      return Promise.reject("Sku does not exists")
      
    }
-   const data:IStock=findBySku(sku,stock);
-   let initialStock:number=0;
-   if(data !==undefined){
+   let initialStock=0;
+   const data:IStock|null=findStockBySku(sku,stock);
+   if(data !==null){
     initialStock=data.stock;
    }
-   const total:number=transactions.reduce((initialStock,transaction)=>calculatStockLevel(initialStock,transaction),initialStock)};
-   return Promise.resolve({sku,qty:total});
+   const total:number=transactions.reduce(calculatStockLevel,initialStock);
+   return Promise.resolve({"sku":sku,qty:total});
      
 }
+function findStockBySku(sku:string,data:any[]):IStock |null{
+ return data.find(x=>x.sku==sku) || null
+}
 
-function isSkuExist(sku:string,data:any[]):Boolean{
- const result:any= data.find(x=>x.sku==sku)
- if(result !=undefined){
-   return false
- }
- return true;
-}
-function findBySku(sku:string,data:IStock[]):IStock{
- return data.find(x=>x.sku==sku)
-}
 function calculatStockLevel(acc:number,current:ITransactions):number{
- 
  return (acc+current.qty)
 }
-Awaited getStockBySku("LTV719449/39/39")
