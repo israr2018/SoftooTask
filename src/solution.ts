@@ -42,6 +42,10 @@ function findStockBySku(sku:string,data:any[]):IStock |null{
  return data.find(x=>x.sku==sku) || null
 }
 
-function calculatStockLevel(acc:number,current:ITransactions):number{
- return (acc+current.qty)
+function calculatStockLevel(acc:number,current:ITransactions):number {
+  if(current.type==='order')
+  return (acc+current.qty)
+  else
+  return (acc-current.qty)
+
 }
