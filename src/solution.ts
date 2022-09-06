@@ -19,10 +19,8 @@ interface ITransactions{
 
 
 export  function getStockBySku(sku:string):Promise<{sku:string,qty:number}>{
-  // const stockData=getData('data/stock.json');
   const stockData=getData(stockFilePath);
   const stock:IStock[]=JSON.parse(stockData);
-  // const transitionData=getData('data/transactions.json')
   const transitionData=getData(transactionsFilePath)
   const transactions:ITransactions[]=JSON.parse(transitionData);
    if(!isSkuExist(sku,stock) && !isSkuExist(sku,transactions)){
